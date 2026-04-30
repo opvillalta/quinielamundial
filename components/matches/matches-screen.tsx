@@ -64,27 +64,28 @@ export function MatchesScreen() {
 
   return (
     <div
-      className="flex-1 flex flex-col overflow-hidden"
-      style={{ background: '#f4f5f7' }}
+      className="flex-1 flex flex-col overflow-hidden bg-[#F8FAFC]"
     >
       {/* Filter pills */}
-      <div className="flex gap-2 px-4 pt-4 pb-3 overflow-x-auto scrollbar-hide">
+      <div className="flex gap-3 px-4 pt-6 pb-4 overflow-x-auto scrollbar-hide">
         {STAGES.map(s => (
           <button
             key={s}
             onClick={() => setActiveStage(s)}
-            className="shrink-0 px-5 py-2 rounded-full text-sm font-bold transition-all duration-200"
+            className="shrink-0 px-6 py-2.5 rounded-2xl text-xs font-black uppercase tracking-widest transition-all duration-300 active:scale-95"
             style={
               activeStage === s
                 ? {
-                    background: 'linear-gradient(135deg, #e8003d, #c4003a)',
+                    background: 'linear-gradient(135deg, #FF004C 0%, #C2003A 100%)',
                     color: '#fff',
-                    boxShadow: '0 4px 14px rgba(232,0,61,0.35)',
+                    boxShadow: '0 8px 20px rgba(232, 0, 61, 0.3)',
+                    transform: 'translateY(-1px)',
                   }
                 : {
                     background: '#fff',
-                    color: '#9ca3af',
-                    border: '1.5px solid #e5e7eb',
+                    color: '#64748B',
+                    border: '1px solid #E2E8F0',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.02)',
                   }
             }
           >
@@ -93,114 +94,117 @@ export function MatchesScreen() {
         ))}
       </div>
 
-      <div className="flex-1 overflow-y-auto scrollbar-hide pb-4">
+      <div className="flex-1 overflow-y-auto scrollbar-hide pb-20">
 
         {/* === LIVE MATCH FEATURED CARD === */}
         {(activeStage === 'Todos' || activeStage === 'En vivo') && liveMatches.length > 0 && (
-          <div className="px-4 mb-4">
-            <p className="text-sm font-bold text-gray-800 mb-2 px-1">
-              En Vivo
-            </p>
+          <div className="px-4 mb-8">
+            <div className="flex items-center gap-2 mb-3 px-1">
+              <div className="w-2 h-2 rounded-full bg-[#FF004C] animate-pulse" />
+              <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#0F172A]">
+                Partidos en vivo
+              </p>
+            </div>
             <div
-              className="rounded-2xl p-5 relative overflow-hidden"
+              className="rounded-[2.5rem] p-6 relative overflow-hidden group transition-all duration-500 hover:scale-[1.01]"
               style={{
-                background: 'linear-gradient(145deg, #1a1040 0%, #2d1060 50%, #3b1580 100%)',
-                boxShadow: '0 8px 32px rgba(45,16,96,0.4)',
+                background: 'linear-gradient(145deg, #0F172A 0%, #1E293B 100%)',
+                boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.5)',
               }}
             >
-              {/* Subtle glow orb */}
+              {/* Glass reflection */}
+              <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
+              
+              {/* Dynamic glow orb */}
               <div
-                className="absolute top-[-30px] right-[-30px] w-40 h-40 rounded-full pointer-events-none"
-                style={{ background: 'radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%)' }}
+                className="absolute top-[-50px] right-[-50px] w-64 h-64 rounded-full pointer-events-none opacity-20 blur-3xl animate-pulse"
+                style={{ background: 'radial-gradient(circle, #FF004C 0%, transparent 70%)' }}
               />
 
-              {/* Stage label */}
-              <div className="text-center mb-3">
-                <span className="text-white text-xs font-semibold opacity-80">
+              <div className="text-center mb-6">
+                <span className="bg-white/10 backdrop-blur-md px-3 py-1 rounded-full text-white/60 text-[10px] font-bold uppercase tracking-widest">
                   {liveMatches[0].stage}
                   {liveMatches[0].group ? ` · Grupo ${liveMatches[0].group}` : ''}
                 </span>
               </div>
 
-              {/* Teams + score */}
-              <div className="flex items-center justify-between px-2">
-                {/* Home */}
-                <div className="flex flex-col items-center gap-2 flex-1">
-                  <span className="text-4xl">{liveMatches[0].homeTeam.flag}</span>
-                  <span className="text-white font-bold text-sm text-center leading-tight">
+              <div className="flex items-center justify-between px-2 relative z-10">
+                <div className="flex flex-col items-center gap-3 flex-1">
+                  <div className="w-16 h-16 rounded-3xl bg-white/5 backdrop-blur-md p-3 shadow-inner ring-1 ring-white/10 group-hover:rotate-[-5deg] transition-transform duration-500">
+                    <img src={liveMatches[0].homeTeam.flag} alt="" className="w-full h-full object-contain" />
+                  </div>
+                  <span className="text-white font-black text-xs text-center leading-tight uppercase tracking-wide">
                     {liveMatches[0].homeTeam.name}
                   </span>
-                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Local</span>
                 </div>
 
-                {/* Score */}
-                <div className="flex flex-col items-center gap-1 px-4">
-                  <span
-                    className="tabular-nums text-white"
-                    style={{
-                      fontFamily: 'var(--font-display)',
-                      fontSize: '3rem',
-                      lineHeight: 1,
-                      letterSpacing: '0.06em',
-                    }}
-                  >
-                    {liveMatches[0].homeScore ?? 0} : {liveMatches[0].awayScore ?? 0}
-                  </span>
-                  {/* Live badge */}
-                  <div
-                    className="flex items-center gap-1 px-3 py-1 rounded-full"
-                    style={{ background: 'rgba(255,255,255,0.15)' }}
-                  >
-                    <Radio className="w-2.5 h-2.5 text-green-400 animate-pulse" />
-                    <span className="text-green-400 text-[10px] font-bold tracking-widest">EN VIVO</span>
+                <div className="flex flex-col items-center gap-2 px-4">
+                  <div className="flex items-center gap-4">
+                    <span className="text-5xl font-black text-white tabular-nums tracking-tighter">
+                      {liveMatches[0].homeScore ?? 0}
+                    </span>
+                    <span className="text-white/20 text-3xl font-light">:</span>
+                    <span className="text-5xl font-black text-white tabular-nums tracking-tighter">
+                      {liveMatches[0].awayScore ?? 0}
+                    </span>
+                  </div>
+                  <div className="bg-[#FF004C] px-3 py-1 rounded-full flex items-center gap-1.5 shadow-[0_0_15px_rgba(255,0,76,0.5)]">
+                    <Radio className="w-2.5 h-2.5 text-white animate-pulse" />
+                    <span className="text-white text-[9px] font-black tracking-[0.2em]">LIVE</span>
                   </div>
                 </div>
 
-                {/* Away */}
-                <div className="flex flex-col items-center gap-2 flex-1">
-                  <span className="text-4xl">{liveMatches[0].awayTeam.flag}</span>
-                  <span className="text-white font-bold text-sm text-center leading-tight">
+                <div className="flex flex-col items-center gap-3 flex-1">
+                  <div className="w-16 h-16 rounded-3xl bg-white/5 backdrop-blur-md p-3 shadow-inner ring-1 ring-white/10 group-hover:rotate-[5deg] transition-transform duration-500">
+                    <img src={liveMatches[0].awayTeam.flag} alt="" className="w-full h-full object-contain" />
+                  </div>
+                  <span className="text-white font-black text-xs text-center leading-tight uppercase tracking-wide">
                     {liveMatches[0].awayTeam.name}
                   </span>
-                  <span className="text-white/50 text-[10px] font-semibold uppercase tracking-wider">Visitante</span>
                 </div>
               </div>
 
-              {/* Prediction strip */}
-              {predictionMap[liveMatches[0].id] ? (
-                <div
-                  className="mt-4 rounded-xl px-4 py-2 flex items-center justify-between"
-                  style={{ background: 'rgba(255,255,255,0.10)' }}
-                >
+              {predictionMap[liveMatches[0].id] && (
+                <div className="mt-8 pt-4 border-t border-white/5 flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-green-400" />
-                    <span className="text-white/70 text-xs">
-                      Tu pred: <span className="text-white font-bold">{predictionMap[liveMatches[0].id].homeScore} - {predictionMap[liveMatches[0].id].awayScore}</span>
-                    </span>
+                    <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center">
+                      <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    </div>
+                    <div>
+                      <p className="text-white/40 text-[9px] font-bold uppercase tracking-widest">Tu Predicción</p>
+                      <p className="text-white font-black text-xs">
+                        {predictionMap[liveMatches[0].id].homeScore} - {predictionMap[liveMatches[0].id].awayScore}
+                      </p>
+                    </div>
                   </div>
                   {predictionMap[liveMatches[0].id].points !== undefined && (
-                    <span className="text-yellow-400 font-bold text-xs">+{predictionMap[liveMatches[0].id].points} pts</span>
+                    <div className="bg-yellow-400/20 px-3 py-1.5 rounded-xl">
+                      <span className="text-yellow-400 font-black text-xs">+{predictionMap[liveMatches[0].id].points} PTS</span>
+                    </div>
                   )}
                 </div>
-              ) : null}
+              )}
             </div>
           </div>
         )}
 
         {/* === MATCH LIST === */}
         <div className="px-4">
-          {filtered.length > 0 && (activeStage !== 'En vivo' || filtered.length > liveMatches.length) && (
-            <div className="flex items-center justify-between mb-2 px-1">
-              <p className="text-sm font-bold text-gray-800">
-                {activeStage === 'Todos' ? 'Partidos' : activeStage}
-              </p>
-            </div>
-          )}
+          <div className="flex items-center justify-between mb-4 px-1">
+            <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#64748B]">
+              {activeStage === 'Todos' ? 'Próximos Encuentros' : activeStage}
+            </p>
+            {filtered.length > 0 && (
+              <span className="text-[10px] font-bold text-[#94A3B8]">
+                {filtered.length} partidos
+              </span>
+            )}
+          </div>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             {filtered.length === 0 && (
-              <div className="flex items-center justify-center py-20">
-                <p className="text-sm text-gray-400">No hay partidos en esta categoría</p>
+              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-[2rem] border border-dashed border-slate-200">
+                <p className="text-sm font-bold text-slate-400">No hay partidos disponibles</p>
               </div>
             )}
 
@@ -241,64 +245,56 @@ function MatchCard({ match, prediction, onPredict }: {
   return (
     <button
       onClick={!isLocked ? onPredict : undefined}
-      className="w-full text-left"
+      className="w-full text-left group"
       style={{ cursor: isLocked ? 'default' : 'pointer' }}
     >
       <div
-        className="rounded-2xl px-4 py-3.5 transition-all duration-150 active:scale-[0.99]"
+        className="rounded-[2rem] px-5 py-5 transition-all duration-300 active:scale-[0.98] relative overflow-hidden"
         style={{
           background: '#ffffff',
           boxShadow: isLive
-            ? '0 4px 20px rgba(100,220,100,0.12), 0 1px 3px rgba(0,0,0,0.06)'
-            : '0 1px 3px rgba(0,0,0,0.06), 0 4px 12px rgba(0,0,0,0.04)',
-          border: isLive ? '1.5px solid rgba(100,220,100,0.30)' : '1.5px solid transparent',
+            ? '0 20px 40px -10px rgba(34, 197, 94, 0.15)'
+            : '0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 10px 15px -3px rgba(0, 0, 0, 0.02)',
+          border: isLive ? '2px solid #22C55E' : '1px solid #F1F5F9',
         }}
       >
-        {/* Main row — Team | Time/Date | Team */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4 relative z-10">
 
           {/* Home team */}
-          <div className="flex-1 flex items-center gap-2.5">
-            <span className="text-2xl leading-none">{match.homeTeam.flag}</span>
-            <span className="font-semibold text-sm text-gray-800 leading-tight truncate">
+          <div className="flex-1 flex flex-col items-center gap-2">
+            <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center p-2 ring-1 ring-slate-100 group-hover:scale-110 transition-transform duration-300">
+              <img src={match.homeTeam.flag} alt="" className="w-full h-full object-contain" />
+            </div>
+            <span className="font-black text-[10px] text-slate-800 uppercase tracking-wider text-center line-clamp-1">
               {match.homeTeam.name}
             </span>
           </div>
 
-          {/* Center — time & date */}
-          <div className="flex flex-col items-center shrink-0 min-w-[72px]">
+          {/* Center — Status */}
+          <div className="flex flex-col items-center shrink-0 min-w-[80px]">
             {isLive ? (
-              <div className="flex items-center gap-1">
-                <Radio className="w-2.5 h-2.5 text-green-500 animate-pulse" />
-                <span
-                  className="font-bold text-green-500 tracking-wider"
-                  style={{ fontSize: '0.8rem' }}
-                >
-                  EN VIVO
-                </span>
-              </div>
-            ) : isFinished ? (
-              <div className="flex flex-col items-center gap-0.5">
-                <span
-                  className="font-bold tabular-nums"
-                  style={{ fontSize: '1.15rem', color: '#374151', fontFamily: 'var(--font-display)', letterSpacing: '0.05em' }}
-                >
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xl font-black text-slate-900 tabular-nums">
                   {match.homeScore ?? 0} - {match.awayScore ?? 0}
                 </span>
-                <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">Final</span>
+                <div className="bg-green-500/10 px-2 py-0.5 rounded-full flex items-center gap-1">
+                  <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                  <span className="text-green-600 text-[8px] font-black tracking-widest uppercase">Live</span>
+                </div>
+              </div>
+            ) : isFinished ? (
+              <div className="flex flex-col items-center gap-1">
+                <span className="text-xl font-black text-slate-900 tabular-nums">
+                  {match.homeScore ?? 0} - {match.awayScore ?? 0}
+                </span>
+                <span className="text-[8px] font-black text-slate-400 uppercase tracking-[0.2em]">Final</span>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-0">
-                <span
-                  className="font-bold tabular-nums leading-tight"
-                  style={{ fontSize: '1.05rem', color: '#e8003d' }}
-                >
+              <div className="flex flex-col items-center gap-0.5">
+                <span className="text-lg font-black text-[#FF004C] tabular-nums leading-none">
                   {format(matchDate, 'HH:mm')}
                 </span>
-                <span
-                  className="text-[10px] font-semibold uppercase tracking-wide"
-                  style={{ color: '#9ca3af' }}
-                >
+                <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">
                   {format(matchDate, 'd MMM', { locale: es })}
                 </span>
               </div>
@@ -306,55 +302,44 @@ function MatchCard({ match, prediction, onPredict }: {
           </div>
 
           {/* Away team */}
-          <div className="flex-1 flex items-center gap-2.5 justify-end">
-            <span className="font-semibold text-sm text-gray-800 leading-tight text-right truncate">
+          <div className="flex-1 flex flex-col items-center gap-2">
+            <div className="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center p-2 ring-1 ring-slate-100 group-hover:scale-110 transition-transform duration-300">
+              <img src={match.awayTeam.flag} alt="" className="w-full h-full object-contain" />
+            </div>
+            <span className="font-black text-[10px] text-slate-800 uppercase tracking-wider text-center line-clamp-1">
               {match.awayTeam.name}
             </span>
-            <span className="text-2xl leading-none">{match.awayTeam.flag}</span>
           </div>
         </div>
 
-        {/* Prediction row */}
+        {/* Prediction strip */}
         {prediction ? (
-          <div
-            className="mt-2.5 pt-2.5 flex items-center justify-between"
-            style={{ borderTop: '1px solid #f3f4f6' }}
-          >
-            <div className="flex items-center gap-1.5">
-              <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-              <span className="text-xs text-gray-500">
-                Tu pred: <span className="text-gray-800 font-bold">{prediction.homeScore} - {prediction.awayScore}</span>
-                {prediction.firstGoalScorer && (
-                  <span className="text-gray-400"> · {prediction.firstGoalScorer}</span>
-                )}
-              </span>
-            </div>
+          <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-between">
             <div className="flex items-center gap-2">
-              {prediction.points !== undefined && (
-                <span className="text-xs font-bold" style={{ color: '#e8003d' }}>+{prediction.points} pts</span>
-              )}
-              {!isLocked && (
-                <span className="text-xs font-bold" style={{ color: '#e8003d' }}>Editar</span>
-              )}
+              <div className="w-6 h-6 rounded-full bg-green-50 flex items-center justify-center">
+                <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+              </div>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wide">
+                Tu pred: <span className="text-slate-900 font-black">{prediction.homeScore} - {prediction.awayScore}</span>
+              </p>
             </div>
+            {prediction.points !== undefined && (
+              <span className="text-[10px] font-black text-[#FF004C] bg-red-50 px-2 py-1 rounded-lg">
+                +{prediction.points} PTS
+              </span>
+            )}
           </div>
         ) : !isLocked ? (
-          <div
-            className="mt-2.5 pt-2.5 flex items-center justify-between"
-            style={{ borderTop: '1px solid #f3f4f6' }}
-          >
-            <span className="text-xs font-semibold" style={{ color: '#e8003d' }}>
-              Ingresar predicción
+          <div className="mt-4 pt-4 border-t border-slate-50 flex items-center justify-center group-hover:gap-3 transition-all duration-300">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-[#FF004C]">
+              Hacer Predicción
             </span>
-            <ChevronRight className="w-3.5 h-3.5" style={{ color: '#e8003d' }} />
+            <ChevronRight className="w-3.5 h-3.5 text-[#FF004C] group-hover:translate-x-1 transition-transform" />
           </div>
         ) : isLocked && !prediction ? (
-          <div
-            className="mt-2.5 pt-2.5 flex items-center gap-1.5"
-            style={{ borderTop: '1px solid #f3f4f6' }}
-          >
-            <Lock className="w-3 h-3 text-gray-300" />
-            <span className="text-xs text-gray-400">Sin predicción</span>
+          <div className="mt-4 pt-4 border-t border-slate-50 flex items-center gap-2">
+            <Lock className="w-3 h-3 text-slate-300" />
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-300">Cerrado</span>
           </div>
         ) : null}
       </div>

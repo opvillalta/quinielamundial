@@ -26,35 +26,28 @@ interface PredictionModalProps {
 
 function ScoreInput({ value, onChange, label }: { value: number; onChange: (v: number) => void; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-3">
-      <span
-        className="text-[10px] font-bold uppercase tracking-[0.22em] text-gray-500"
-      >
+    <div className="flex flex-col items-center gap-4 w-full">
+      <span className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400">
         {label}
       </span>
-      <div className="flex items-center gap-5">
+      <div className="flex items-center justify-between w-full max-w-[140px] gap-2">
         <button
           type="button"
           onClick={() => onChange(Math.max(0, value - 1))}
-          className="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 active:scale-90 transition-transform bg-gray-50 border border-gray-200 shadow-sm"
+          className="w-10 h-10 rounded-xl flex items-center justify-center text-slate-400 transition-all active:scale-90 bg-white border border-slate-100 shadow-sm"
         >
           <Minus className="w-4 h-4" />
         </button>
         <span
-          className="w-14 text-center tabular-nums leading-none"
-          style={{
-            fontFamily: 'var(--font-display)',
-            fontSize: '4rem',
-            color: '#111827',
-            lineHeight: 1,
-          }}
+          className="flex-1 text-center tabular-nums font-black text-slate-900 leading-none"
+          style={{ fontSize: '2.5rem' }}
         >
           {value}
         </span>
         <button
           type="button"
           onClick={() => onChange(value + 1)}
-          className="w-10 h-10 rounded-full flex items-center justify-center active:scale-90 transition-transform bg-[#e8003d] shadow-md shadow-red-500/20"
+          className="w-10 h-10 rounded-xl flex items-center justify-center active:scale-90 transition-all bg-[#FF004C] shadow-lg shadow-red-500/20"
         >
           <Plus className="w-4 h-4 text-white" />
         </button>
@@ -67,194 +60,155 @@ export function PredictionModal({ match, existing, onClose, onSaved }: Predictio
   const { token } = useAuth()
   const [homeScore, setHomeScore] = useState(existing?.homeScore ?? 0)
   const [awayScore, setAwayScore] = useState(existing?.awayScore ?? 0)
+  const [selectedGoleadorId, setSelectedGoleadorId] = useState<string>(existing?.firstGoalScorerId ?? existing?.firstGoalScorer ?? '')
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [saved, setSaved] = useState(false)
-
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
-    resolver: zodResolver(schema),
-    defaultValues: { firstGoalScorer: existing?.firstGoalScorer ?? '' },
-  })
 
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [])
 
-  async function onSubmit(data: FormData) {
+  async function handleSave(e: React.FormEvent) {
+    e.preventDefault()
     if (!token) return
-    const result = await savePrediction(token, {
-      matchId: match.id,
-      homeScore,
-      awayScore,
-      firstGoalScorer: data.firstGoalScorer,
-    })
-    onSaved(result)
-    setSaved(true)
-    setTimeout(onClose, 1200)
+    
+    if (!selectedGoleadorId) {
+      alert('Por favor selecciona qué equipo meterá el primer gol')
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const result = await savePrediction(token, {
+        matchId: match.id,
+        homeScore,
+        awayScore,
+        firstGoalScorer: selectedGoleadorId,
+      })
+      onSaved(result)
+      setSaved(true)
+      setTimeout(onClose, 1500)
+    } catch (error) {
+      console.error('Error saving prediction:', error)
+      alert('Error al guardar la predicción. Reintenta por favor.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const matchDate = new Date(match.date)
 
   return (
     <div
-      className="fixed inset-0 z-[100] flex items-end backdrop-blur-sm"
-      style={{ background: 'rgba(0,0,0,0.6)' }}
+      className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 backdrop-blur-md transition-all duration-500"
+      style={{ background: 'rgba(15, 23, 42, 0.7)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div
-        className="w-full rounded-t-3xl flex flex-col animate-in slide-in-from-bottom-4 duration-300 overflow-hidden bg-white shadow-[0_-8px_40px_rgba(0,0,0,0.15)]"
+        className="w-full max-w-lg rounded-t-[3rem] sm:rounded-[3rem] flex flex-col animate-in slide-in-from-bottom-10 duration-500 overflow-hidden bg-white shadow-[0_20px_50px_rgba(0,0,0,0.3)]"
       >
-        <div className="p-6 pb-10 flex flex-col gap-6">
+        <div className="p-8 pb-10 flex flex-col gap-8">
           {/* Header */}
           <div className="flex items-start justify-between">
-            <div className="flex flex-col gap-1">
-              <div className="flex flex-col">
-                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#e8003d]">
-                   {match.stage}{match.group ? ` · Grupo ${match.group}` : ''}
-                 </p>
-                 <p className="text-sm font-semibold text-gray-800">
-                    Predecir Resultado
-                 </p>
-              </div>
-              <p className="text-xs text-gray-500 font-medium">
+            <div className="flex flex-col gap-1.5">
+              <span className="bg-red-50 text-[#FF004C] px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-[0.2em] self-start">
+                {match.stage}{match.group ? ` · Grupo ${match.group}` : ''}
+              </span>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">
+                Hacer Predicción
+              </h2>
+              <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">
                 {format(matchDate, "d 'de' MMMM · HH:mm", { locale: es })}
               </p>
             </div>
             <button
               onClick={onClose}
-              className="w-8 h-8 rounded-full flex items-center justify-center text-gray-500 transition-all hover:bg-gray-100 active:scale-90 bg-gray-50 border border-gray-200"
+              className="w-10 h-10 rounded-2xl flex items-center justify-center text-slate-400 transition-all hover:bg-slate-50 hover:text-slate-900 active:scale-90 bg-white border border-slate-100"
             >
-              <X className="w-4 h-4" />
+              <X className="w-5 h-5" />
             </button>
           </div>
 
-          {/* Teams row */}
-          <div
-            className="flex items-center justify-around rounded-2xl px-4 py-5 shadow-sm border border-gray-100 bg-[#f9fafb]"
-          >
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-4xl shadow-sm rounded-sm overflow-hidden">{match.homeTeam.flag}</span>
-              <span
-                className="font-bold text-gray-900 tracking-wider"
-                style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem' }}
-              >
-                {match.homeTeam.code}
-              </span>
-            </div>
-
-            {/* VS divider */}
-            <div className="flex flex-col items-center gap-1">
-              <span
-                className="font-bold text-gray-400"
-                style={{ fontFamily: 'var(--font-display)', fontSize: '1.1rem', letterSpacing: '0.15em' }}
-              >
-                VS
-              </span>
-            </div>
-
-            <div className="flex flex-col items-center gap-2">
-              <span className="text-4xl shadow-sm rounded-sm overflow-hidden">{match.awayTeam.flag}</span>
-              <span
-                className="font-bold text-gray-900 tracking-wider"
-                style={{ fontFamily: 'var(--font-display)', fontSize: '1.25rem' }}
-              >
-                {match.awayTeam.code}
-              </span>
-            </div>
-          </div>
-
           {saved ? (
-            <div className="flex flex-col items-center gap-4 py-10">
-              <div className="w-20 h-20 rounded-full flex items-center justify-center shadow-[0_0_40px_rgba(34,197,94,0.3)] bg-green-50">
-                <CheckCircle2 className="w-10 h-10 text-green-500" />
+            <div className="flex flex-col items-center gap-6 py-12 animate-in zoom-in-95 duration-500">
+              <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-[0_20px_40px_rgba(34,197,94,0.3)] bg-green-500">
+                <CheckCircle2 className="w-12 h-12 text-white" />
               </div>
-              <p
-                className="text-gray-900 text-2xl tracking-wide uppercase"
-                style={{ fontFamily: 'var(--font-display)' }}
-              >
-                ¡PREDICCIÓN GUARDADA!
-              </p>
+              <div className="text-center">
+                <p className="text-slate-900 text-2xl font-black uppercase tracking-tighter">¡LISTO!</p>
+                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Predicción guardada</p>
+              </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
-              {/* Score picker */}
-              <div
-                className="flex items-center justify-around rounded-2xl px-4 py-6 shadow-none border border-gray-100 bg-white"
-              >
-                <ScoreInput value={homeScore} onChange={setHomeScore} label={match.homeTeam.code} />
-
-                {/* Center divider */}
-                <div className="flex flex-col items-center gap-1">
-                  <div className="w-px h-16 bg-gray-200" />
-                </div>
-
-                <ScoreInput value={awayScore} onChange={setAwayScore} label={match.awayTeam.code} />
+            <form onSubmit={handleSave} className="flex flex-col gap-8">
+              {/* Score Input Picker */}
+              <div className="flex items-center justify-between bg-slate-50 p-6 sm:p-8 rounded-[2.5rem] border border-slate-100 shadow-inner">
+                <ScoreInput value={homeScore} onChange={setHomeScore} label="LOCAL" />
+                <div className="w-px h-16 bg-slate-200 mx-4 shrink-0" />
+                <ScoreInput value={awayScore} onChange={setAwayScore} label="VISITANTE" />
               </div>
 
-              {/* First goal scorer */}
-              <div className="flex flex-col gap-1.5 px-1">
-                <label className="text-[10px] font-bold uppercase tracking-[0.2em] text-gray-600">
-                  Primer goleador
+              {/* First Goal Scorer - Team Selector */}
+              <div className="flex flex-col gap-3">
+                <label className="text-[10px] font-black uppercase tracking-[0.25em] text-slate-400 ml-1">
+                  ¿Quién mete el primer gol?
                 </label>
-                <input
-                  {...register('firstGoalScorer')}
-                  type="text"
-                  placeholder="Nombre del jugador (ej. Messi)"
-                  className="rounded-xl px-4 py-3.5 text-gray-900 text-sm font-medium placeholder:text-gray-400 placeholder:font-normal focus:outline-none transition shadow-sm bg-gray-50 border border-gray-200 focus:border-[#e8003d] focus:ring-2 focus:ring-red-500/20"
-                />
-                {errors.firstGoalScorer && (
-                  <p className="text-xs font-semibold text-red-500 mt-1">
-                    {errors.firstGoalScorer.message}
-                  </p>
-                )}
+                <div className="grid grid-cols-2 gap-3">
+                  {[match.homeTeam, match.awayTeam].map((team) => {
+                    const isSelected = selectedGoleadorId === team.id;
+                    return (
+                      <button
+                        key={team.id}
+                        type="button"
+                        onClick={() => setSelectedGoleadorId(team.id)}
+                        className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all duration-300 ${
+                          isSelected 
+                            ? 'border-[#FF004C] bg-red-50/50 shadow-md translate-y-[-2px]' 
+                            : 'border-slate-100 bg-white hover:border-slate-200'
+                        }`}
+                      >
+                        <div className="w-8 h-8 shrink-0">
+                          <img src={team.flag} alt="" className="w-full h-full object-contain" />
+                        </div>
+                        <span className={`text-xs font-black uppercase tracking-wide truncate ${isSelected ? 'text-[#FF004C]' : 'text-slate-600'}`}>
+                          {team.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
-              {/* Points guide — 3 columns */}
-              <div
-                className="flex rounded-xl overflow-hidden border border-gray-200 bg-gray-50/50 shadow-sm mt-2"
-              >
-                <div className="flex-1 flex flex-col items-center gap-1 py-3 group">
-                  <span
-                    className="font-bold leading-none text-[#e8003d]"
-                    style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem' }}
-                  >
-                    +3
-                  </span>
-                  <span className="text-[9px] font-bold uppercase tracking-wide text-gray-500 text-center">Resultado</span>
-                </div>
-                <div className="w-px bg-gray-200" />
-                <div className="flex-1 flex flex-col items-center gap-1 py-3">
-                  <span
-                    className="font-bold leading-none text-[#e8003d]"
-                    style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem' }}
-                  >
-                    +5
-                  </span>
-                  <span className="text-[9px] font-bold uppercase tracking-wide text-gray-500 text-center">Clavado</span>
-                </div>
-                <div className="w-px bg-gray-200" />
-                <div className="flex-1 flex flex-col items-center gap-1 py-3">
-                  <span
-                    className="font-bold leading-none text-[#2563eb]"
-                    style={{ fontFamily: 'var(--font-display)', fontSize: '1.5rem' }}
-                  >
-                    +2
-                  </span>
-                  <span className="text-[9px] font-bold uppercase tracking-wide text-gray-500 text-center">1er gol</span>
-                </div>
+              {/* Points Legend */}
+              <div className="flex gap-2">
+                {[
+                  { pts: '+3', label: 'Resultado' },
+                  { pts: '+5', label: 'Exacto' },
+                  { pts: '+2', label: 'Goleador' }
+                ].map((item, i) => (
+                  <div key={i} className="flex-1 bg-slate-50/50 border border-slate-100 rounded-2xl py-3 flex flex-col items-center justify-center gap-0.5">
+                    <span className="text-sm font-black text-[#FF004C]">{item.pts}</span>
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-widest">{item.label}</span>
+                  </div>
+                ))}
               </div>
 
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="mt-2 font-bold text-sm tracking-widest py-4 rounded-2xl flex items-center justify-center gap-2 disabled:opacity-60 active:scale-[0.98] transition-transform uppercase shadow-[0_6px_20px_rgba(232,0,61,0.3)] bg-[linear-gradient(135deg,#e8003d,#c4003a)] text-white"
-                style={{
-                  fontFamily: 'var(--font-display)',
-                  fontSize: '1.2rem',
-                  letterSpacing: '0.12em',
-                }}
+                className="w-full h-20 rounded-[2rem] bg-[#0F172A] text-white font-black text-lg tracking-[0.1em] shadow-[0_20px_40px_rgba(15,23,42,0.3)] active:scale-[0.98] transition-all disabled:opacity-50 flex items-center justify-center gap-3 group overflow-hidden relative"
               >
-                {isSubmitting && <Loader2 className="w-4 h-4 animate-spin text-white" />}
-                GUARDAR PREDICCIÓN
+                {/* Button shine effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                
+                {isSubmitting ? (
+                  <Loader2 className="w-6 h-6 animate-spin" />
+                ) : (
+                  <>
+                    <span className="uppercase">Guardar Predicción</span>
+                  </>
+                )}
               </button>
             </form>
           )}

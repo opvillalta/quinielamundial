@@ -21,6 +21,10 @@ export const metadata: Metadata = {
   title: 'Quiniela Mundial 2026',
   description: 'Predice los resultados del Mundial FIFA 2026 y compite con tus amigos',
   generator: 'v0.app',
+  icons: {
+    icon: '/logoWC.svg',
+    apple: '/logoWC.svg',
+  },
 }
 
 export const viewport: Viewport = {
